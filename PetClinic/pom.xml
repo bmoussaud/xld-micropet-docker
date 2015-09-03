@@ -2,16 +2,17 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.xebialabs.xldeploy.demos</groupId>
-    <artifactId>xldeploy-petclinic-parent</artifactId>
-    <version>1.0</version>
-  </parent>
+  <groupId>com.xebialabs.xldeploy.demos</groupId>
   <artifactId>PetClinic</artifactId>
   <version>4.1-SNAPSHOT</version>
   <packaging>war</packaging>
-  <name>PetClinic Docker Webapp</name>
+  <name>PetClinic Docker MicroService</name>
   <url>http://www.xebialabs.com</url>
+  <properties>
+    <maven.build.timestamp.format>yyyyddMMHHmmss</maven.build.timestamp.format>
+    <petclinic.build.date>${maven.build.timestamp}</petclinic.build.date>
+    <petclinic.image.version>4.1.${petclinic.build.date}</petclinic.image.version>
+  </properties>
   <build>
     <finalName>PetClinic</finalName>
     <plugins>
@@ -29,7 +30,7 @@
             </goals>
 
             <configuration>
-              <imageName>petportal/petclinic</imageName>
+              <imageName>micropetportal/petclinic</imageName>
               <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
               <resources>
                 <resource>
@@ -49,8 +50,8 @@
             </goals>
 
             <configuration>
-              <image>petportal/petclinic</image>
-              <newName>localhost:5000/petportal/petclinic:${petclinic.image.version}</newName>
+              <image>micropetportal/petclinic</image>
+              <newName>localhost:5000/micropetportal/petclinic:${petclinic.image.version}</newName>
               <pushImage>true</pushImage> <!-- We are also pushing this time -->
               <tagInfoFile>${project.build.directory}/docker_image_info.json</tagInfoFile>
             </configuration>
@@ -58,6 +59,67 @@
 
         </executions>
 
+      </plugin>
+
+      <plugin>
+        <groupId>com.xebialabs.xldeploy</groupId>
+        <artifactId>xldeploy-maven-plugin</artifactId>
+        <version>5.0.1</version>
+
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>xld-import</id>
+            <phase>install</phase>
+            <goals>
+              <goal>import</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <configuration>
+          <serverAddress>localhost</serverAddress>
+          <applicationName>Docker/PetService</applicationName>
+          <deploymentPackageProperties>
+            <applicationDependencies>
+              <entry key="PetBackendService">2.1</entry>
+              <entry key="Infrastructure">1.0</entry>
+            </applicationDependencies>
+          </deploymentPackageProperties>
+
+          <deployables>
+
+            <smoketest.HttpRequestTest name="smoke test front">
+              <url>http://petclinic:8080/petclinic</url>
+              <expectedResponseText>Home</expectedResponseText>
+              <links>
+                <value>petclinic:petclinic</value>
+              </links>
+            </smoketest.HttpRequestTest>
+
+            <docker.Image name="petclinic">
+              <image>micropetportal/petclinic:${petclinic.image.version}</image>
+              <registryHost>{{PROJECT_REGISTRY_HOST}}</registryHost>
+              <ports>
+                <docker.PortSpec name="petclinic/exposed-port">
+                  <hostPort>8888</hostPort>
+                  <containerPort>8080</containerPort>
+                </docker.PortSpec>
+              </ports>
+              <links>
+                <docker.LinkSpec name="petclinic/petclinic-backend">
+                  <alias>petclinic-backend</alias>
+                </docker.LinkSpec>
+              </links>
+              <volumes>
+                <docker.VolumeSpec name="petclinic/petclinic-config">
+                  <hostPath>/opt/docker/volumes/petclinic-config</hostPath>
+                  <containerPath>/usr/local/tomcat/conf/Catalina/localhost</containerPath>
+                </docker.VolumeSpec>
+              </volumes>
+            </docker.Image>
+          </deployables>
+        </configuration>
       </plugin>
 
     </plugins>
@@ -70,4 +132,16 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>xebialabs-maven2</id>
+      <url>https://dist.xebialabs.com/public/maven2/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>knopflerfish</id>
+      <url>http://www.knopflerfish.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
 </project>

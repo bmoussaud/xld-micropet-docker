@@ -2,16 +2,18 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.xebialabs.xldeploy.demos</groupId>
-    <artifactId>xldeploy-petclinic-parent</artifactId>
-    <version>1.0</version>
-  </parent>
+  <groupId>com.xebialabs.xldeploy.demos</groupId>
   <artifactId>PetClinic-Backend</artifactId>
-  <version>1.2</version>
+  <version>2.1</version>
   <packaging>war</packaging>
-  <name>PetClinic-Backend Docker Webapp</name>
+  <name>PetClinic-Backend Docker MicroService</name>
   <url>http://maven.apache.org</url>
+  <properties>
+    <maven.build.timestamp.format>yyyyddMMHHmmss</maven.build.timestamp.format>
+    <petclinic.build.date>${maven.build.timestamp}</petclinic.build.date>
+    <petclinic-backend.image.version>1.1.${petclinic.build.date}</petclinic-backend.image.version>
+  </properties>
+
   <build>
     <finalName>PetClinic-Backend</finalName>
     <plugins>
@@ -41,7 +43,7 @@
             </goals>
 
             <configuration>
-              <imageName>petportal/petclinic-backend</imageName>
+              <imageName>micropetportal/petclinic-backend</imageName>
               <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
               <resources>
                 <resource>
@@ -61,8 +63,8 @@
             </goals>
 
             <configuration>
-              <image>petportal/petclinic-backend</image>
-              <newName>localhost:5000/petportal/petclinic-backend:${petclinic-backend.image.version}</newName>
+              <image>micropetportal/petclinic-backend</image>
+              <newName>localhost:5000/micropetportal/petclinic-backend:${petclinic-backend.image.version}</newName>
               <pushImage>true</pushImage> <!-- We are also pushing this time -->
               <tagInfoFile>${project.build.directory}/docker_image_info.json</tagInfoFile>
             </configuration>
@@ -71,6 +73,52 @@
         </executions>
 
       </plugin>
+
+      <plugin>
+        <groupId>com.xebialabs.xldeploy</groupId>
+        <artifactId>xldeploy-maven-plugin</artifactId>
+        <version>5.0.1</version>
+
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>xld-import</id>
+            <phase>install</phase>
+            <goals>
+              <goal>import</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <configuration>
+          <serverAddress>localhost</serverAddress>
+          <applicationName>Docker/PetBackendService</applicationName>
+          <deploymentPackageProperties>
+            <applicationDependencies>
+              <entry key="Infrastructure">1.0</entry>
+            </applicationDependencies>
+          </deploymentPackageProperties>
+
+          <deployables>
+
+            <smoketest.HttpRequestTest name="smoke test back">
+              <url>http://petclinic-backend:8080/petclinic-backend</url>
+              <expectedResponseText>Hello</expectedResponseText>
+              <links>
+                <value>petclinic-backend:petclinic-backend</value>
+              </links>
+            </smoketest.HttpRequestTest>
+
+            <docker.Image name="petclinic-backend">
+              <image>micropetportal/petclinic-backend:${petclinic-backend.image.version}</image>
+              <registryHost>{{PROJECT_REGISTRY_HOST}}</registryHost>
+            </docker.Image>
+
+          </deployables>
+        </configuration>
+      </plugin>
+
+
 
 
     </plugins>
@@ -83,4 +131,16 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>xebialabs-maven2</id>
+      <url>https://dist.xebialabs.com/public/maven2/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>knopflerfish</id>
+      <url>http://www.knopflerfish.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
 </project>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.xebialabs.xldeploy.demos</groupId>
+  <artifactId>PetClinic-Infrastructure</artifactId>
+  <version>1.1</version>
+  <packaging>dar</packaging>
+  <name>PetClinic-Backend Infrastructure MicroService</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <maven.build.timestamp.format>yyyyddMMHHmmss</maven.build.timestamp.format>
+    <petclinic.build.date>${maven.build.timestamp}</petclinic.build.date>
+    <petclinic-backend.image.version>1.1.${petclinic.build.date}</petclinic-backend.image.version>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.xebialabs.xldeploy</groupId>
+        <artifactId>xldeploy-maven-plugin</artifactId>
+        <version>5.0.1</version>
+
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>xld-import</id>
+            <phase>install</phase>
+            <goals>
+              <goal>import</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <configuration>
+          <serverAddress>localhost</serverAddress>
+          <applicationName>Docker/Infrastructure</applicationName>
+
+          <deployables>
+
+            <docker.Image name="www">
+              <image>httpd:2.4</image>
+            </docker.Image>
+            <docker.Image name="cache">
+              <image>redis:2.6</image>
+            </docker.Image>
+
+          </deployables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>xebialabs-maven2</id>
+      <url>https://dist.xebialabs.com/public/maven2/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>knopflerfish</id>
+      <url>http://www.knopflerfish.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+</project>
