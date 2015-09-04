@@ -35,16 +35,19 @@
         <configuration>
           <serverAddress>localhost</serverAddress>
           <applicationName>Docker/Infrastructure</applicationName>
+          <deploymentPackageProperties>
+            <orchestrator>
+              <value>parallel-by-deployment-group</value>
+            </orchestrator>
+          </deploymentPackageProperties>
 
           <deployables>
-
             <docker.Image name="www">
               <image>httpd:2.4</image>
             </docker.Image>
             <docker.Image name="cache">
               <image>redis:2.6</image>
             </docker.Image>
-
           </deployables>
         </configuration>
       </plugin>

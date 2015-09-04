@@ -82,9 +82,12 @@
           <applicationName>Docker/PetService</applicationName>
           <deploymentPackageProperties>
             <applicationDependencies>
-              <entry key="PetBackendService">2.1</entry>
+              <entry key="PetBackendService">[2.1,2.2)</entry>
               <entry key="Infrastructure">1.0</entry>
             </applicationDependencies>
+            <orchestrator>
+              <value>parallel-by-deployment-group</value>
+            </orchestrator>
           </deploymentPackageProperties>
 
           <deployables>
