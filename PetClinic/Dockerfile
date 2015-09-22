@@ -12,6 +12,8 @@ ENV JAVA_OPTS -Xmx512m -Djava.security.egd=file:/dev/./urandom
 RUN  mkdir -p /usr/local/tomcat/conf/Catalina/localhost
 COPY ./src/main/docker/petclinic.xml  /usr/local/tomcat/conf/Catalina/localhost/petclinic.xml
 
+RUN /usr/bin/mvn package
+
 COPY target/PetClinic.war /usr/local/tomcat/webapps/petclinic.war
 
 CMD ["catalina.sh", "run"]
