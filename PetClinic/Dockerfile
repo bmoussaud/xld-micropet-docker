@@ -16,6 +16,6 @@ COPY . /tmp/
 
 RUN cd /tmp && /usr/bin/mvn package
 
-COPY target/PetClinic.war /usr/local/tomcat/webapps/petclinic.war
+RUN mv /tmp/target/PetClinic.war /usr/local/tomcat/webapps/petclinic.war
 
 CMD ["catalina.sh", "run"]
